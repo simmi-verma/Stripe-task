@@ -1,68 +1,83 @@
+/* Cart.css */
+
 .cart-container {
-  width: 350px;
+  max-width: 600px;
+  margin: 50px auto;
+  padding: 30px;
   background-color: #f9f9f9;
-  padding: 20px;
   border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  font-family: Arial, sans-serif;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .cart-title {
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin-bottom: 15px;
   text-align: center;
+  font-size: 28px;
+  margin-bottom: 20px;
+  color: #333;
 }
 
 .cart-item {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
-  padding: 10px;
+  align-items: center;
+  padding: 12px 10px;
   border-bottom: 1px solid #ddd;
 }
 
-.item-name {
+.cart-item p {
   flex: 1;
-  font-size: 1rem;
+  margin: 0;
+  font-size: 18px;
+  color: #555;
 }
 
-.qty-input {
+.cart-item input[type="number"] {
   width: 60px;
   padding: 5px;
-  margin-right: 10px;
-  border: 1px solid #ccc;
+  margin: 0 10px;
   border-radius: 5px;
+  border: 1px solid #ccc;
+  text-align: center;
 }
 
-.remove-btn {
-  background-color: #ff4d4f;
+.cart-item button {
+  background-color: #ff6b6b;
   color: white;
   border: none;
-  padding: 5px 10px;
+  padding: 6px 12px;
   border-radius: 5px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background-color 0.3s ease;
 }
 
-.remove-btn:hover {
-  background-color: #ff7875;
+.cart-item button:hover {
+  background-color: #ff4b4b;
 }
 
 .checkout-btn {
   width: 100%;
-  padding: 10px;
-  background-color: #4caf50;
+  padding: 12px;
+  margin-top: 20px;
+  background-color: #00b894;
   color: white;
-  font-weight: bold;
+  font-size: 18px;
   border: none;
-  border-radius: 8px;
+  border-radius: 7px;
   cursor: pointer;
-  margin-top: 15px;
-  transition: background 0.2s;
+  transition: background-color 0.3s ease;
 }
 
 .checkout-btn:hover {
-  background-color: #45a049;
+  background-color: #019874;
+}
+
+input[type="email"] {
+  font-size: 16px;
+  margin-top: 10px;
+  box-sizing: border-box;
+}
+
+p {
+  color: #777;
 }
