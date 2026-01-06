@@ -7,22 +7,26 @@ export default function Success() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchParams] = useSearchParams();
-  const sessionId = searchParams.get("session_id"); // from Stripe redirect
+  const sessionId = searchParams.get("session_id");
 
   useEffect(() => {
     if (!sessionId) return;
 
-    fetch(`${import.meta.env.VITE_API_URL}/checkout-session/${sessionId}`)
-      .then(res => res.json())
-      .then(data => {
+    const fetchSession = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/checkout-session/${sessionId}`);
+        if (!res.ok) throw new Error("Failed to fetch transaction");
+        const data = await res.json();
         setTransaction(data);
         setLoading(false);
-      })
-      .catch(err => {
+      } catch (err) {
         console.error(err);
         setError("Failed to fetch transaction details.");
         setLoading(false);
-      });
+      }
+    };
+
+    fetchSession();
   }, [sessionId]);
 
   if (loading) return <p className="success-container">Loading transaction...</p>;
@@ -31,12 +35,14 @@ export default function Success() {
   return (
     <div className="success-container">
       <div className="success-icon">✅</div>
-      <h2 className="success-message">Payment Successful</h2>
+      <h2 className="success-message">Payment {transaction.status === "paid" || transaction.status === "completed" ? "Successful" : "Failed"}</h2>
 
       <div className="transaction-details">
-        <p><strong>Transaction ID:</strong> {transaction.id}</p>
+        <p><strong>Transaction ID:</strong> {transaction.stripeSessionId}</p>
+        <p><strong>Status:</strong> {transaction.status}</p>
         <p><strong>Amount Paid:</strong> ₹{transaction.amount} {transaction.currency.toUpperCase()}</p>
         <p><strong>Payment Method:</strong> {transaction.payment_method}</p>
+        <p><strong>Customer Email:</strong> {transaction.email || "N/A"}</p>
         <p><strong>Date:</strong> {transaction.date}</p>
 
         <h3>Items Purchased:</h3>

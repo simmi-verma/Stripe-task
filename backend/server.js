@@ -1,107 +1,145 @@
 const express = require("express");
 const cors = require("cors");
+const mongoose = require("mongoose");
 const Stripe = require("stripe");
-const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+require("dotenv").config();
+
+const Order = require("./models/Order");
 
 const app = express();
-require("dotenv").config();
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
+/* ------------------ DATABASE ------------------ */
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("✅ MongoDB Connected"))
+  .catch(err => console.error("❌ Mongo Error:", err));
 
+/* ------------------ MIDDLEWARE ------------------ */
 app.use(cors());
-app.use(express.json());
 
+// Stripe webhook needs raw body
+app.use((req, res, next) => {
+  if (req.originalUrl === "/webhook") return next();
+  express.json()(req, res, next);
+});
+
+/* ------------------ CREATE CHECKOUT SESSION ------------------ */
 app.post("/create-checkout-session", async (req, res) => {
-  const { cartItems } = req.body;
+  const { cartItems, userId, email } = req.body;
 
   try {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "payment",
+      customer_email: email, // pass email to Stripe
       line_items: cartItems.map(item => ({
         price_data: {
           currency: "inr",
           product_data: { name: item.name },
-          unit_amount: item.price * 100 // amount in paise
+          unit_amount: item.price * 100,
         },
-        quantity: item.quantity
+        quantity: item.quantity,
       })),
       success_url: "http://localhost:5173/success?session_id={CHECKOUT_SESSION_ID}",
-      cancel_url: "http://localhost:5173/cancel"
+      cancel_url: "http://localhost:5173/cancel",
     });
 
-    res.json({
-      url: session.url,                  // Redirect user to this URL
-      checkoutSessionId: session.id,     // Checkout Session ID
-      paymentIntentId: session.payment_intent, // PaymentIntent ID
-      customerId: session.customer       // Customer ID (if available)
+    // Save order as PENDING with email
+    await Order.create({
+      userId,
+      email,
+      stripeSessionId: session.id,
+      status: "pending",
     });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+
+    res.json({ url: session.url });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
   }
 });
 
-// Retrieve Checkout Session (to verify payment)
-app.get("/checkout-session/:id", async (req, res) => {
+/* ------------------ GET CHECKOUT SESSION DETAILS ------------------ */
+app.get("/checkout-session/:sessionId", async (req, res) => {
   try {
-    const session = await stripe.checkout.sessions.retrieve(req.params.id, {
+    const session = await stripe.checkout.sessions.retrieve(req.params.sessionId, {
       expand: ["line_items", "payment_intent"],
     });
 
     res.json({
-      id: session.id,
-      amount: (session.amount_total / 100).toFixed(2),
+      stripeSessionId: session.id,
+      status: session.payment_status,
+      amount: session.amount_total / 100,
       currency: session.currency,
-      payment_method: session.payment_intent.payment_method_types[0],
+      email: session.customer_email,
+      payment_method: session.payment_intent?.payment_method_types?.[0] || "N/A",
       date: new Date(session.created * 1000).toLocaleString(),
       items: session.line_items.data.map(item => ({
         name: item.description,
         quantity: item.quantity,
-        price: (item.price.unit_amount / 100).toFixed(2),
+        price: item.price.unit_amount / 100,
       })),
     });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Unable to fetch session" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch session" });
   }
 });
 
-
-app.post("/webhook", express.raw({ type: "application/json" }), (req, res) => {
+/* ------------------ STRIPE WEBHOOK ------------------ */
+app.post("/webhook", express.raw({ type: "application/json" }), async (req, res) => {
   const sig = req.headers["stripe-signature"];
   let event;
 
   try {
     event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
   } catch (err) {
-    console.log("Webhook signature verification failed.", err.message);
+    console.error(err);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  // Handle the event
-  switch (event.type) {
-    case "checkout.session.completed":
-      const session = event.data.object;
-      console.log("✅ Payment successful!");
-      console.log("Checkout Session ID:", session.id);
-      console.log("PaymentIntent ID:", session.payment_intent);
-      console.log("Customer ID:", session.customer);
-      // TODO: Update your order database here as "paid"
-      break;
+  if (event.type === "checkout.session.completed") {
+    const session = event.data.object;
 
-    case "payment_intent.payment_failed":
-      const paymentIntent = event.data.object;
-      console.log("❌ Payment failed:", paymentIntent.id);
-      // TODO: Mark payment as failed in your DB
-      break;
+    const fullSession = await stripe.checkout.sessions.retrieve(session.id, {
+      expand: ["line_items", "payment_intent"],
+    });
 
-    default:
-      console.log(`Unhandled event type ${event.type}`);
+    await Order.findOneAndUpdate(
+      { stripeSessionId: session.id },
+      {
+        status: "completed",
+        paymentIntentId: session.payment_intent,
+        amount: session.amount_total / 100,
+        currency: session.currency,
+        items: fullSession.line_items.data.map(item => ({
+          name: item.description,
+          quantity: item.quantity,
+          price: item.price.unit_amount / 100,
+        })),
+        // keep email from pending order if Stripe doesn't return it
+        email: session.customer_email || undefined,
+      }
+    );
+
+    console.log("✅ Order completed:", session.id);
+  }
+
+  if (event.type === "payment_intent.payment_failed") {
+    const intent = event.data.object;
+    await Order.findOneAndUpdate(
+      { paymentIntentId: intent.id },
+      { status: "failed" }
+    );
+    console.log("❌ Payment failed:", intent.id);
   }
 
   res.json({ received: true });
 });
 
-app.listen(4000, () => {
-  console.log("Server running on http://localhost:4000");
+/* ------------------ SERVER ------------------ */
+app.listen(process.env.PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${process.env.PORT}`);
 });
