@@ -1,0 +1,99 @@
+/* Container for success page */
+.success-container {
+  max-width: 700px;
+  margin: 60px auto;
+  padding: 40px 30px;
+  background: linear-gradient(135deg, #b2ebf2, #80deea);
+  border-radius: 15px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  font-family: 'Arial', sans-serif;
+}
+
+/* Success Icon */
+.success-icon {
+  font-size: 70px;
+  margin-bottom: 20px;
+  animation: pop 0.5s ease;
+}
+
+/* Animation for icon */
+@keyframes pop {
+  0% { transform: scale(0); }
+  70% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* Success Message */
+.success-message {
+  font-size: 30px;
+  font-weight: 700;
+  margin-bottom: 25px;
+  color: #00695c;
+  letter-spacing: 0.5px;
+}
+
+/* Transaction Card */
+.transaction-details {
+  text-align: left;
+  margin-top: 25px;
+  padding: 25px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+  transition: transform 0.2s;
+}
+
+.transaction-details:hover {
+  transform: translateY(-3px);
+}
+
+/* Text inside transaction card */
+.transaction-details p {
+  margin: 10px 0;
+  font-weight: 500;
+  font-size: 16px;
+  color: #424242;
+}
+
+.transaction-details h3 {
+  margin-top: 20px;
+  margin-bottom: 12px;
+  font-size: 20px;
+  color: #00796b;
+}
+
+/* Item list */
+.transaction-details ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.transaction-details li {
+  margin-bottom: 6px;
+  font-size: 15px;
+  color: #555;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Back to home button */
+.back-home-btn {
+  display: inline-block;
+  margin-top: 30px;
+  padding: 12px 25px;
+  background-color: #00796b;
+  color: #fff;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.back-home-btn:hover {
+  background-color: #004d40;
+  transform: translateY(-2px);
+  box-shadow: 0 7px 20px rgba(0,0,0,0.15);
+}

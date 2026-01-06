@@ -1,0 +1,55 @@
+.cancel-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  background: #fff5f5;
+  border-radius: 12px;
+  max-width: 500px;
+  margin: 60px auto;
+  padding: 40px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+  font-family: "Segoe UI", Tahoma, sans-serif;
+}
+
+.cancel-icon {
+  font-size: 50px;
+  color: #f43f5e;
+  margin-bottom: 20px;
+}
+
+.cancel-message {
+  font-size: 24px;
+  font-weight: 600;
+  color: #b91c1c;
+  text-align: center;
+}
+
+.success-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  background: #f0f4ff;
+  border-radius: 12px;
+  max-width: 500px;
+  margin: 60px auto;
+  padding: 40px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+  font-family: "Segoe UI", Tahoma, sans-serif;
+}
+
+.success-icon {
+  font-size: 50px;
+  color: #22c55e;
+  margin-bottom: 20px;
+}
+
+.success-message {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+}
