@@ -40,6 +40,18 @@ This project demonstrates a **Stripe Checkout integration** in a React frontend 
 - **State Management:** React Context API
 
 ---
+## Backend .env file 
+PORT=4000
+MONGO_URI=mongodb+srv://svindbhopal_db_user:D98KlZRFvh8DWiPa@cluster0.az28j9s.mongodb.net/
+
+STRIPE_SECRET_KEY= your_secret_key
+
+STRIPE_WEBHOOK_SECRET=Your_web_hook_key
+
+
+## frontend .env file
+VITE_API_URL=http://localhost:4000
+
 
 ## Installation
 
