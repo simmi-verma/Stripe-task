@@ -42,7 +42,7 @@ This project demonstrates a **Stripe Checkout integration** in a React frontend 
 ---
 ## Backend .env file 
 PORT=4000
-MONGO_URI=mongodb+srv://svindbhopal_db_user:D98KlZRFvh8DWiPa@cluster0.az28j9s.mongodb.net/
+MONGO_URI=your_key
 
 STRIPE_SECRET_KEY= your_secret_key
 
